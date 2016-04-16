@@ -63,7 +63,7 @@
 
 #define CONFIG_MXC_UART_BASE		UART1_BASE
 #define CONFIG_CONSOLE_DEV		"ttymxc0"
-#define CONFIG_MMCROOT			"/dev/mmcblk0p2"
+#define CONFIG_MMCROOT			"/dev/mmcblk1p2"
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
@@ -202,7 +202,7 @@
 		"root=ubi0:rootfs rootfstype=ubifs; " \
 		"run videoargs\0" \
 	"bootargs_emmc=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/mmcblk1p1 rootwait rw; " \
+		"root=/dev/mmcblk0p1 rootwait rw; " \
 		"run videoargs\0" \
 	"bootcmd=" \
 		"if test ${chosen_rootfs} != emmc; then " \

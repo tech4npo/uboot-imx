@@ -1218,7 +1218,7 @@ int power_init_board(void)
 
 static void update_env(void)
 {
-	setenv("mmcroot" , "/dev/mmcblk0p2 rootwait rw");
+	setenv("mmcroot" , "/dev/mmcblk1p2 rootwait rw");
 	if (is_cpu_type(MXC_CPU_MX6Q)) {
 		if (is_dart_board()) {
 			setenv("fdt_file", "imx6q-var-dart.dtb");
