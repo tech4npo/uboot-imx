@@ -207,8 +207,13 @@ int splash_screen_prepare(void)
 #endif
 
 	/* Turn on backlight */
-	if (lvds_enabled)
+	if (lvds_enabled) {
 		gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);
+		if(is_som_v2())
+			gpio_set_value(IMX_GPIO_NR(1,  2), 1);
+		else
+			gpio_set_value(IMX_GPIO_NR(1, 17), 1);
+	}
 
 	return 0;
 }
@@ -316,6 +321,11 @@ static void print_emmc_size(void)
 {
 	struct mmc *mmc;
 	int device;
+
+	if(!is_som_v2()) {
+		puts("No eMMC\n");
+		return;
+	}
 
 	if (is_dart_board() && (MMC_BOOT == get_mmc_boot_device()))
 		device=0;
@@ -540,11 +550,11 @@ int board_mmc_init(bd_t *bis)
 				SETUP_IOMUX_PADS(usdhc3_pads);
 				usdhc_cfg[1].esdhc_base = USDHC3_BASE_ADDR;
 				usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-			} else {
+			} else if(is_som_v2()){
 				SETUP_IOMUX_PADS(usdhc1_pads);
 				usdhc_cfg[1].esdhc_base = USDHC1_BASE_ADDR;
 				usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-			}
+			} else continue;
 			gd->arch.sdhc_clk = usdhc_cfg[1].sdhc_clk;
 			usdhc_cfg[1].max_bus_width = 4;
 			break;
@@ -748,6 +758,13 @@ static void setup_display(void)
 
 	/* Turn off backlight until display is ready */
 	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 0);
+	if(is_som_v2()) {
+		SETUP_IOMUX_PAD(PAD_GPIO_2__GPIO1_IO02 | MUX_PAD_CTRL(ENET_PAD_CTRL));
+		gpio_direction_output(IMX_GPIO_NR(1,  2), 1);
+	} else {
+		SETUP_IOMUX_PAD(PAD_SD1_DAT1__GPIO1_IO17 | MUX_PAD_CTRL(ENET_PAD_CTRL));
+		gpio_direction_output(IMX_GPIO_NR(1, 17), 1);
+	}
 
 	/* Setup HSYNC, VSYNC, DISP_CLK for debugging purposes */
 	SETUP_IOMUX_PADS(di0_pads);
