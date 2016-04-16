@@ -95,6 +95,7 @@ void var_eeprom_mx6qd_dram_setup_iomux_from_struct(struct var_pinmux_group_regs 
 void var_eeprom_dram_init_from_struct(struct var_eeprom_cfg *p_var_eeprom_cfg);
 
 int var_eeprom_read_struct(struct var_eeprom_cfg *p_var_eeprom_cfg);
+int var_eeprom_read_header(struct var_eeprom_cfg_header *p_var_eeprom_cfg_header);
 
 void var_eeprom_strings_print(struct var_eeprom_cfg *p_var_eeprom_cfg);
 

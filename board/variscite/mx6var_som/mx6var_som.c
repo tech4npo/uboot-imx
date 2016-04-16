@@ -35,6 +35,9 @@
 #include <usb.h>
 #include <usb/ehci-fsl.h>
 
+#include "mx6var_eeprom.h"
+#include "mx6var_eeprom_v2.h"
+
 #ifdef CONFIG_FSL_FASTBOOT
 #include <fsl_fastboot.h>
 #ifdef CONFIG_ANDROID_RECOVERY
@@ -76,6 +79,35 @@ DECLARE_GLOBAL_DATA_PTR;
 #define VAR_SOM_BACKLIGHT_EN	IMX_GPIO_NR(4, 30)
 
 bool lvds_enabled=false;
+
+static bool is_som_v2(void)
+{
+	static bool som_v2=false;
+	static bool readed=false;
+
+	
+	if(readed) return som_v2;
+
+	struct var_eeprom_cfg_header var_eeprom_cfg_header = {0};
+	struct var_eeprom_v2_cfg_header var_eeprom_v2_cfg_header = {0};
+	char* pn = 0;
+	char str_v2[] = "VSM-MX6-C";
+
+	if(!var_eeprom_read_header(&var_eeprom_cfg_header) &&
+	    var_eeprom_is_valid((struct var_eeprom_cfg*)&var_eeprom_cfg_header))
+		pn = var_eeprom_cfg_header.part_number;
+	else
+	if(!var_eeprom_v2_read_header(&var_eeprom_v2_cfg_header,VAR_MX6_EEPROM_CHIP) &&
+	    var_eeprom_v2_is_valid((struct var_eeprom_v2_cfg_header*)&var_eeprom_v2_cfg_header))
+		pn = var_eeprom_v2_cfg_header.part_number;
+	
+	if(!pn) return false;
+
+	readed=true;
+	som_v2 = !strncmp(str_v2,pn,sizeof(str_v2)-1);
+
+	return som_v2;
+}
 
 #ifdef CONFIG_SYS_USE_NAND
 static int var_load_file_from_nand(u32 addr, char *filename)
@@ -1278,7 +1310,13 @@ int board_late_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Variscite VAR-SOM-MX6 ");
+	if(is_som_v2()) {
+		puts("\nModel: MTU-02M\n");
+		puts("Board: Variscite VAR-SOM-MX6 V2 ");
+	} else {
+		puts("\nModel: MTU-02\n");
+		puts("Board: Variscite VAR-SOM-MX6 ");
+	}
 
 	if (is_cpu_type(MXC_CPU_MX6Q)) {
 		puts("Quad");
@@ -1304,7 +1342,7 @@ int checkboard(void)
 	} else
 		puts("????");
 
-	puts("\n");
+	puts("\n\n");
 	return 0;
 }
 

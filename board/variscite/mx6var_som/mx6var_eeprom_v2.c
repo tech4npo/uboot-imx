@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifdef CONFIG_SPL_BUILD
 #include <common.h>
 #include <i2c.h>
 #include "mx6var_eeprom_v2.h"
@@ -15,16 +14,33 @@
 #define eeprom_v2_debug(M, ...)
 #endif
 
-static u32 get_address_by_index(unsigned char index, u32 *ram_addresses);
-static u32 get_value_by_index(unsigned char index, u32 *ram_values);
-static int handle_one_command(struct eeprom_command *eeprom_commands,int command_num, \
-		u32 *ram_addresses, u32 *ram_values);
-
 
 bool var_eeprom_v2_is_valid(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
 {
 	return (VARISCITE_MAGIC_V2 == p_var_eeprom_v2_cfg->variscite_magic);
 }
+
+int var_eeprom_v2_read_header(struct var_eeprom_v2_cfg_header *var_eeprom_v2_cfg_header, \
+		unsigned char address)
+{
+	int eeprom_found = i2c_probe(address);
+	if (0 == eeprom_found) {
+		if (i2c_read(address, 0, 1, (void*) var_eeprom_v2_cfg_header, \
+					sizeof(struct var_eeprom_v2_cfg_header))) {
+			printf("Read device ID error!\n");
+			return -1;
+		}
+	} else {
+		return -1;
+	}
+	return 0;
+}
+
+#ifdef CONFIG_SPL_BUILD
+static u32 get_address_by_index(unsigned char index, u32 *ram_addresses);
+static u32 get_value_by_index(unsigned char index, u32 *ram_values);
+static int handle_one_command(struct eeprom_command *eeprom_commands,int command_num, \
+		u32 *ram_addresses, u32 *ram_values);
 
 
 void var_eeprom_v2_strings_print(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)

@@ -8,13 +8,32 @@
 #include <command.h>
 #include <i2c.h>
 #include "mx6var_eeprom.h"
-#ifdef CONFIG_SPL_BUILD
-#include <asm/arch/mx6-ddr.h>
 
 bool var_eeprom_is_valid(struct var_eeprom_cfg *p_var_eeprom_cfg)
 {
 	return (VARISCITE_MAGIC == p_var_eeprom_cfg->header.variscite_magic);
 }
+
+int var_eeprom_read_header(struct var_eeprom_cfg_header *p_var_eeprom_cfg_header)
+{
+	int eeprom_found;
+	int ret = 0;
+	i2c_set_bus_num(1);
+	eeprom_found = i2c_probe(VAR_MX6_EEPROM_CHIP);
+	if (0 == eeprom_found) {
+		if (i2c_read(VAR_MX6_EEPROM_CHIP, VAR_MX6_EEPROM_STRUCT_OFFSET, \
+					1, (uchar *)p_var_eeprom_cfg_header, sizeof(struct var_eeprom_cfg_header))) {
+			return -1;
+		}
+	} else {
+			return -1;
+	}
+
+	return ret;
+}
+
+#ifdef CONFIG_SPL_BUILD
+#include <asm/arch/mx6-ddr.h>
 
 void var_eeprom_mx6dlsl_dram_setup_iomux_from_struct(struct var_pinmux_group_regs *pinmux_group)
 {

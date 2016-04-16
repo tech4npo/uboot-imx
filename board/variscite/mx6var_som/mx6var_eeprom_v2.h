@@ -44,7 +44,17 @@ struct __attribute__((packed)) var_eeprom_v2_cfg
 	u8 crc;
 };
 
+struct __attribute__((packed)) var_eeprom_v2_cfg_header
+{
+	u32 variscite_magic; /* == HEX("VAR2")? */
+	u8 part_number[16];
+	u8 Assembly[16];
+	u8 date[12];
+};
+
 bool var_eeprom_v2_is_valid(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg);
+int var_eeprom_v2_read_header(struct var_eeprom_v2_cfg_header *var_eeprom_v2_cfg_header, \
+		unsigned char address);
 void var_eeprom_v2_strings_print(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg);
 int handle_eeprom_data(struct var_eeprom_v2_cfg *var_eeprom_v2_cfg, \
 		u32 *ram_addresses, u32 *ram_values);
