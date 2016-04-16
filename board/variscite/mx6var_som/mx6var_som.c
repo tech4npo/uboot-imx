@@ -1262,7 +1262,10 @@ static void update_env(void)
 			if (is_solo_custom_board())
 				setenv("fdt_file", "imx6q-var-som-vsc.dtb");
 			else
-				setenv("fdt_file", "imx6q-var-som.dtb");
+				if (is_som_v2())
+					setenv("fdt_file", "imx6q-mtu-02m.dtb");
+				else
+					setenv("fdt_file", "imx6q-mtu-02.dtb");
 		}
 	} else if (is_cpu_type(MXC_CPU_MX6D)) {
 		if (is_dart_board()) {
@@ -1272,7 +1275,10 @@ static void update_env(void)
 			else
 				setenv("mmcroot" , "/dev/mmcblk1p2 rootwait rw");
 		} else {
-			setenv("fdt_file", "imx6q-var-som.dtb");
+				if (is_som_v2())
+					setenv("fdt_file", "imx6q-mtu-02m.dtb");
+				else
+					setenv("fdt_file", "imx6q-mtu-02.dtb");
 		}
 	} else if (is_cpu_type(MXC_CPU_MX6DL)) {
 		if (is_som_solo()) {
