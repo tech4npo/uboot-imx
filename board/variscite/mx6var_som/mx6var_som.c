@@ -694,7 +694,7 @@ static void enable_lvds(struct display_info_t const *dev)
 	struct iomuxc *iomux = (struct iomuxc *)
 				IOMUXC_BASE_ADDR;
 	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT |
+	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT |
 	       IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT;
 	writel(reg, &iomux->gpr[2]);
 
@@ -709,110 +709,28 @@ static void lvds_enable_disable(struct display_info_t const *dev)
 		disable_lvds(dev);
 }
 
-static int detect_dart_vsc_display(struct display_info_t const *dev)
-{
-	return (!is_mx6_custom_board());
-}
-
-static int detect_mx6cb_cdisplay(struct display_info_t const *dev)
-{
-	if (!is_mx6_custom_board())
-		return 0;
-
-	i2c_set_bus_num(dev->bus);
-	return (0 == i2c_probe(dev->addr));
-}
-
-static int detect_mx6cb_rdisplay(struct display_info_t const *dev)
-{
-	if (!is_mx6_custom_board())
-		return 0;
-
-	/* i2c probe the *c*display */
-	i2c_set_bus_num(MX6CB_CDISPLAY_I2C_BUS);
-	return (0 != i2c_probe(MX6CB_CDISPLAY_I2C_ADDR));
-}
-
 #define MHZ2PS(f)	(1000000/(f))
 
 struct display_info_t const displays[] = {{
 	.bus	= -1,
 	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_hdmi,
-	.enable	= do_enable_hdmi,
-	.mode	= {
-		.name           = "HDMI",
-		.refresh        = 60,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 31777,
-		.left_margin    = 48,
-		.right_margin   = 16,
-		.upper_margin   = 33,
-		.lower_margin   = 10,
-		.hsync_len      = 96,
-		.vsync_len      = 2,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= -1,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_dart_vsc_display,
+	.pixfmt	= IPU_PIX_FMT_LVDS666,
+	.detect	= 0,
 	.enable	= lvds_enable_disable,
 	.mode	= {
-		.name           = "VAR-WVGA",
+		.name           = "MTU-02-VGA Mitsubishi transflecsive",
 		.refresh        = 60, /* optional */
-		.xres           = 800,
+		.xres           = 640,
 		.yres           = 480,
-		.pixclock       = MHZ2PS(50),
-		.left_margin    = 40,
-		.right_margin   = 40,
-		.upper_margin   = 29,
-		.lower_margin   = 13,
-		.hsync_len      = 48,
-		.vsync_len      = 3,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= MX6CB_CDISPLAY_I2C_BUS,
-	.addr	= MX6CB_CDISPLAY_I2C_ADDR,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_mx6cb_cdisplay,
-	.enable	= lvds_enable_disable,
-	.mode	= {
-		.name           = "VAR-WVGA MX6CB-C",
-		.refresh        = 60, /* optional */
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = MHZ2PS(50),
-		.left_margin    = 39,
-		.right_margin   = 39,
-		.upper_margin   = 29,
-		.lower_margin   = 13,
-		.hsync_len      = 128,
-		.vsync_len      = 2,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= -1,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_mx6cb_rdisplay,
-	.enable	= lvds_enable_disable,
-	.mode	= {
-		.name           = "VAR-WVGA MX6CB-R",
-		.refresh        = 60, /* optional */
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = MHZ2PS(50),
-		.left_margin    = 0,
-		.right_margin   = 40,
-		.upper_margin   = 20,
-		.lower_margin   = 13,
-		.hsync_len      = 48,
-		.vsync_len      = 3,
+		// pll2 352M / 7
+		// TODO pll5 --> 25 MHz
+		.pixclock       = 19886,
+		.left_margin    = 80,
+		.right_margin   = 80,
+		.upper_margin   = 22,
+		.lower_margin   = 525-1-22-480,
+		.hsync_len      = 1,
+		.vsync_len      = 1,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 } } };
@@ -847,6 +765,8 @@ static void setup_display(void)
 	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
 		 | MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
 	/* 1 -> ~50MHz , 2 -> ~56MHz, 3 -> ~75MHz, 4 -> ~68MHz */
+	// pll2 352M / 7
+	// TODO pll5 --> 25 MHz
 	reg |= (1 << MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
 	      | (1 << MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
 	writel(reg, &mxc_ccm->cs2cdr);
@@ -868,16 +788,17 @@ static void setup_display(void)
 	     | IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
 	     | IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT
 	     | IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
-	     | IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
+	     | IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT
 	     | IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0
-	     | IOMUXC_GPR2_LVDS_CH1_MODE_ENABLED_DI0;
+	     | IOMUXC_GPR2_LVDS_CH1_MODE_DISABLED;
 	writel(reg, &iomux->gpr[2]);
 
 	reg = readl(&iomux->gpr[3]);
-	reg = (reg & ~(IOMUXC_GPR3_LVDS1_MUX_CTL_MASK
-			| IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
-	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
-	       << IOMUXC_GPR3_LVDS1_MUX_CTL_OFFSET);
+	reg &= ~(IOMUXC_GPR3_LVDS0_MUX_CTL_MASK |
+		 IOMUXC_GPR3_LVDS1_MUX_CTL_MASK |
+		 IOMUXC_GPR3_HDMI_MUX_CTL_MASK);
+	reg |= (IOMUXC_GPR3_MUX_SRC_IPU1_DI0 <<
+		IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
 }
 #endif /* CONFIG_VIDEO_IPUV3 */
