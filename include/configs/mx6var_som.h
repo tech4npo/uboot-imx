@@ -171,7 +171,9 @@
 	"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} root=${mmcroot}; " \
+	"mmcargs=setenv bootargs console=${console},${baudrate} " \
+		"vt.global_cursor_default=0 " \
+		"root=${mmcroot}; " \
 		"run videoargs\0" \
 	"loadbootscript=" \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
@@ -198,9 +200,11 @@
 
 #define NAND_BOOT_ENV_SETTINGS \
 	"bootargs_ubifs=setenv bootargs console=${console},${baudrate} ubi.mtd=3 " \
+		"vt.global_cursor_default=0 " \
 		"root=ubi0:rootfs rootfstype=ubifs; " \
 		"run videoargs\0" \
 	"bootargs_emmc=setenv bootargs console=${console},${baudrate} " \
+		"vt.global_cursor_default=0 " \
 		"root=/dev/mmcblk0p1 rootwait rw; " \
 		"run videoargs\0" \
 	"bootcmd=" \
@@ -249,6 +253,7 @@
 	"disable_splash=setenv splash_filename; setenv splashimage\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
+		"vt.global_cursor_default=0 " \
 		"root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp; " \
 		"run videoargs\0" \
