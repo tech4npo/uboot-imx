@@ -419,7 +419,8 @@
 
 /* Framebuffer */
 #ifndef CONFIG_SPL_BUILD
-#define CONFIG_VIDEO
+/* #define CONFIG_VIDEO */
+#ifdef CONFIG_VIDEO
 #define CONFIG_VIDEO_IPUV3
 #define CONFIG_CFB_CONSOLE
 #define CONFIG_VGA_AS_SINGLE_DEVICE
@@ -440,6 +441,7 @@
 #define CONFIG_CMD_HDMIDETECT
 #define CONFIG_IMX_VIDEO_SKIP
 #define CONFIG_CMD_BMP
+#endif
 #endif
 
 #define PMIC_I2C_BUS		1
