@@ -104,7 +104,7 @@ static bool is_som_v2(void)
 	if(!pn) return false;
 
 	readed=true;
-	som_v2 = !strncmp(str_v2,pn,sizeof(str_v2)-1);
+	som_v2 = !strncmp(str_v2,pn,sizeof(str_v2)-2) && pn[sizeof(str_v2)-2]>=str_v2[sizeof(str_v2)-2];
 
 	return som_v2;
 }
